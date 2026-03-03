@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cummings Electrical — Client Risk Monitor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #0b1120;
+    color: #e2e8f0;
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .header {
+    background: linear-gradient(135deg, #0f1629 0%, #162040 100%);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 32px 44px 24px;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #f1f5f9;
+    letter-spacing: -0.3px;
+  }
+
+  .header .subtitle {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-top: 4px;
+  }
+
+  .header .date-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #cbd5e1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 7px 16px;
+    border-radius: 8px;
+  }
+
+  .container { padding: 28px 44px 48px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+
+  .company-card {
+    background: #131b2e;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.07);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 22px 28px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .card-header .ticker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+
+  .card-header .company-name {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-top: 3px;
+  }
+
+  .risk-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 20px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  .risk-critical {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .risk-high {
+    background: rgba(251, 146, 60, 0.15);
+    color: #fdba74;
+    border: 1px solid rgba(251, 146, 60, 0.3);
+  }
+
+  /* ===== TOGGLE BUTTONS ===== */
+  .toggle-bar {
+    display: flex;
+    padding: 14px 20px;
+    gap: 12px;
+    background: rgba(0,0,0,0.25);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .toggle-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    user-select: none;
+  }
+
+  .toggle-btn .icon { font-size: 16px; }
+
+  .toggle-btn.good-btn {
+    background: rgba(52, 211, 153, 0.06);
+    color: #6b7280;
+    border-color: rgba(52, 211, 153, 0.12);
+  }
+  .toggle-btn.good-btn:hover {
+    background: rgba(52, 211, 153, 0.1);
+    color: #94a3b8;
+  }
+  .toggle-btn.good-btn.active {
+    background: rgba(52, 211, 153, 0.15);
+    color: #34d399;
+    border-color: #34d399;
+    box-shadow: 0 0 20px rgba(52, 211, 153, 0.12);
+  }
+
+  .toggle-btn.bad-btn {
+    background: rgba(248, 113, 113, 0.06);
+    color: #6b7280;
+    border-color: rgba(248, 113, 113, 0.12);
+  }
+  .toggle-btn.bad-btn:hover {
+    background: rgba(248, 113, 113, 0.1);
+    color: #94a3b8;
+  }
+  .toggle-btn.bad-btn.active {
+    background: rgba(248, 113, 113, 0.15);
+    color: #f87171;
+    border-color: #f87171;
+    box-shadow: 0 0 20px rgba(248, 113, 113, 0.12);
+  }
+
+  .toggle-btn .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.08);
+  }
+  .toggle-btn.good-btn.active .count { background: rgba(52,211,153,0.2); }
+  .toggle-btn.bad-btn.active .count { background: rgba(248,113,113,0.2); }
+
+  /* ===== NEWS PANELS ===== */
+  .news-panel {
+    padding: 16px 20px 24px;
+    display: none;
+  }
+  .news-panel.active { display: block; }
+
+  .news-item {
+    display: block;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    border-left: 4px solid;
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+
+  .news-item:hover { transform: translateX(3px); }
+
+  .news-item.good {
+    border-left-color: #34d399;
+    background: rgba(52, 211, 153, 0.04);
+  }
+  .news-item.good:hover { background: rgba(52, 211, 153, 0.08); }
+
+  .news-item.bad {
+    border-left-color: #f87171;
+    background: rgba(248, 113, 113, 0.04);
+  }
+  .news-item.bad:hover { background: rgba(248, 113, 113, 0.08); }
+
+  .news-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .news-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .impact-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 5px;
+    letter-spacing: 0.4px;
+  }
+
+  .impact-tag.positive { background: rgba(52, 211, 153, 0.12); color: #6ee7b7; }
+  .impact-tag.negative { background: rgba(248, 113, 113, 0.12); color: #fca5a5; }
+  .impact-tag.caution  { background: rgba(251, 191, 36, 0.12); color: #fde68a; }
+
+  .news-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f1f5f9;
+    line-height: 1.45;
+    margin-bottom: 8px;
+  }
+
+  .news-impact {
+    font-size: 14.5px;
+    color: #cbd5e1;
+    line-height: 1.65;
+  }
+
+  .source-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12.5px;
+    color: #60a5fa;
+    margin-top: 10px;
+    opacity: 0.8;
+    transition: opacity 0.15s;
+  }
+  .news-item:hover .source-link { opacity: 1; text-decoration: underline; }
+  .source-link svg {
+    width: 13px; height: 13px;
+    fill: none; stroke: currentColor; stroke-width: 2;
+  }
+
+  /* ===== SUMMARY STRIP ===== */
+  .summary-strip {
+    margin-top: 28px;
+    background: #131b2e;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.07);
+    padding: 22px 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 24px;
+  }
+
+  .summary-item { text-align: center; }
+
+  .summary-item .label {
+    font-size: 12px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .summary-item .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .summary-item .value.red    { color: #fca5a5; }
+  .summary-item .value.orange { color: #fdba74; }
+  .summary-item .value.yellow { color: #fde68a; }
+
+  .footer-note {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: #475569;
+  }
+
+  @media (max-width: 960px) {
+    .grid { grid-template-columns: 1fr; }
+    .summary-strip { grid-template-columns: 1fr 1fr; }
+    .container { padding: 20px 16px; }
+    .header { padding: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Client Risk Monitor — Good News / Bad News</h1>
+      <div class="subtitle">Cummings Electrical — Financial Risk Management &bull; 30-Day Lookback</div>
+    </div>
+    <div class="date-badge">Feb 3 – Mar 3, 2026</div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="grid">
+
+    <!-- ===================== COREWEAVE ===================== -->
+    <div class="company-card">
+      <div class="card-header">
+        <div>
+          <div class="ticker">CRWV</div>
+          <div class="company-name">CoreWeave, Inc.</div>
+        </div>
+        <div class="risk-badge risk-critical">&#9888; Critical</div>
+      </div>
+
+      <div class="toggle-bar">
+        <div class="toggle-btn good-btn active" onclick="switchPanel(this,'crwv-good','crwv-bad')">
+          <span class="icon">&#9650;</span> Good News <span class="count">5</span>
+        </div>
+        <div class="toggle-btn bad-btn" onclick="switchPanel(this,'crwv-bad','crwv-good')">
+          <span class="icon">&#9660;</span> Bad News <span class="count">5</span>
+        </div>
+      </div>
+
+      <div id="crwv-good" class="news-panel active">
+
+        <a href="https://nvidianews.nvidia.com/news/nvidia-and-coreweave-strengthen-collaboration-to-accelerate-buildout-of-ai-factories" target="_blank" class="news-item good">
+          <div class="news-meta">
+            <span class="news-date">Jan 26, 2026</span>
+            <span class="impact-tag positive">Liquidity Boost</span>
+          </div>
+          <div class="news-title">NVIDIA Invests $2B, Expands Strategic Partnership</div>
+          <div class="news-impact">NVIDIA purchased CRWV Class A shares at $87.20/share, bringing its stake to ~11.5%. Partnership expanded to include next-gen Rubin chips, Vera CPUs, and a 5GW AI factory buildout target by 2030. NVIDIA backstop guarantees up to $6.3B in unused capacity through April 2032.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> NVIDIA Newsroom</span>
+        </a>
+
+        <a href="https://finance.yahoo.com/news/coreweave-seeks-8-5-billion-201337551.html" target="_blank" class="news-item good">
+          <div class="news-meta">
+            <span class="news-date">Feb 24, 2026</span>
+            <span class="impact-tag positive">Funding Access</span>
+          </div>
+          <div class="news-title">$8.5B Financing Secured by Meta Contracts</div>
+          <div class="news-impact">Delayed-draw term loan backed by $14.2B Meta contract plus a previously undisclosed $5B+ agreement. Expected investment-grade rating due to Meta's credit profile. ~6% interest rate. Closing expected March 2026.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> Bloomberg via Yahoo Finance</span>
+        </a>
+
+        <a href="https://www.businesswire.com/news/home/20260226281661/en/CoreWeave-Reports-Strong-Fourth-Quarter-and-Fiscal-Year-2025-Results" target="_blank" class="news-item good">
+          <div class="news-meta">
+            <span class="news-date">Feb 26, 2026</span>
+            <span class="impact-tag positive">Revenue Visibility</span>
+          </div>
+          <div class="news-title">Revenue Backlog Grows to $66.8B</div>
+          <div class="news-impact">Backlog up $11.2B sequentially from $55.6B in Q3. Weighted contract length extended to 5 years. New customer wins include CrowdStrike, Midjourney, Runway, Mercado Libre, Cursor, and Cognition.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> BusinessWire — Earnings Release</span>
+        </a>
+
+        <a href="https://www.cnbc.com/2026/02/26/coreweave-crwv-q4-earnings-report-2025.html" target="_blank" class="news-item good">
+          <div class="news-meta">
+            <span class="news-date">Feb 26, 2026</span>
+            <span class="impact-tag positive">Execution</span>
+          </div>
+          <div class="news-title">Q4 Revenue Beats Consensus, Up 110% YoY</div>
+          <div class="news-impact">$1.57B revenue vs. $1.55B expected. Full-year 2025 revenue $5.1B, up 168% YoY. Previously disclosed construction delays resolved ahead of schedule. Revolver expanded to $2.5B.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> CNBC</span>
+        </a>
+
+        <a href="https://www.fool.com/earnings/call-transcripts/2026/02/27/coreweave-crwv-q4-2025-earnings-call-transcript/" target="_blank" class="news-item good">
+          <div class="news-meta">
+            <span class="news-date">Feb 26, 2026</span>
+            <span class="impact-tag positive">Debt Structure</span>
+          </div>
+          <div class="news-title">No Near-Term Debt Maturities Before 2029</div>
+          <div class="news-impact">Only self-amortizing contract-backed and vendor financing debt maturing before 2029. Weighted average interest rate dropped 300bps in 2025. $2.6B convertible notes raised in Q4.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> Motley Fool — Earnings Transcript</span>
+        </a>
+
+      </div>
+
+      <div id="crwv-bad" class="news-panel">
+
+        <a href="https://www.globenewswire.com/news-release/2026/03/03/3248621/0/en/Kessler-Topaz-Meltzer-Check-LLP-CoreWeave-CRWV-Class-Action-Lawsuit-Investors-Face-March-13-2026-Deadline.html" target="_blank" class="news-item bad">
+          <div class="news-meta">
+            <span class="news-date">Feb 26, 2026</span>
+            <span class="impact-tag negative">Cash Burn</span>
+          </div>
+          <div class="news-title">Q4 Net Loss of $452M — Nearly Double Expectations</div>
+          <div class="news-impact">EPS of -$0.89 vs. -$0.49 expected — a 324% negative surprise. Adjusted EBITDA of $898M also missed $929M consensus. Interest expense hit $388M in Q4 alone, up from $149M the prior year.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> GlobeNewswire — Hagens Berman</span>
+        </a>
+
+        <a href="https://www.cnbc.com/2026/02/26/coreweave-crwv-q4-earnings-report-2025.html" target="_blank" class="news-item bad">
+          <div class="news-meta">
+            <span class="news-date">Feb 26, 2026</span>
+            <span class="impact-tag negative">Margin Squeeze</span>
+          </div>
+          <div class="news-title">Q1 2026 Revenue Guidance Misses by ~15%</div>
+          <div class="news-impact">Guided $1.9B–$2.0B vs. $2.29B consensus. Margins expected at low single digits in Q1, expanding to low double digits only by Q4. Q1 interest expense guided at $510M–$590M. Stock fell ~20%.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> CNBC</span>
+        </a>
+
+        <a href="https://investorplace.com/2026/03/coreweave-stock-crwv-buy-the-dip/" target="_blank" class="news-item bad">
+          <div class="news-meta">
+            <span class="news-date">Feb 26, 2026</span>
+            <span class="impact-tag negative">Leverage Risk</span>
+          </div>
+          <div class="news-title">Capital Intensity Far Exceeds Expectations</div>
+          <div class="news-impact">$8.2B in Q4 capex alone. Plans to deploy $2.60 in capital for every $1 of 2026 revenue — far above analyst models. $14.9B total capex in 2025. Moody's projects negative FCF for 18+ months.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> InvestorPlace</span>
+        </a>
+
+        <a href="https://www.globenewswire.com/news-release/2026/03/02/3247636/0/en/CRWV-Alert-Hagens-Berman-Analyzes-CoreWeave-CRWV-452M-Q4-Loss-and-Soft-Guidance-Amid-Ongoing-Securities-Fraud-Litigation.html" target="_blank" class="news-item bad">
+          <div class="news-meta">
+            <span class="news-date">Mar 2–3, 2026</span>
+            <span class="impact-tag negative">Legal Risk</span>
+          </div>
+          <div class="news-title">Securities Fraud Class Action Escalating</div>
+          <div class="news-impact">Multiple law firms pursuing Masaitis v. CoreWeave. Allegations: concealed Denton TX construction delays, overstated scaling capabilities, understated single-supplier risk (Core Scientific named). Lead plaintiff deadline Mar 13.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> GlobeNewswire — Hagens Berman</span>
+        </a>
+
+        <a href="https://investorplace.com/2026/03/coreweave-stock-crwv-buy-the-dip/" target="_blank" class="news-item bad">
+          <div class="news-meta">
+            <span class="news-date">Ongoing</span>
+            <span class="impact-tag caution">Governance</span>
+          </div>
+          <div class="news-title">Insider Selling Flagged by Analysts</div>
+          <div class="news-impact">InvestorPlace flagged executives quietly unloading shares at a pace that raised red flags ahead of the Q4 earnings report. Combined with the 20% post-earnings stock drop, signals internal concern about near-term trajectory.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> InvestorPlace</span>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- ===================== CORE SCIENTIFIC ===================== -->
+    <div class="company-card">
+      <div class="card-header">
+        <div>
+          <div class="ticker">CORZ</div>
+          <div class="company-name">Core Scientific, Inc.</div>
+        </div>
+        <div class="risk-badge risk-high">&#9888; High</div>
+      </div>
+
+      <div class="toggle-bar">
+        <div class="toggle-btn good-btn active" onclick="switchPanel(this,'corz-good','corz-bad')">
+          <span class="icon">&#9650;</span> Good News <span class="count">5</span>
+        </div>
+        <div class="toggle-btn bad-btn" onclick="switchPanel(this,'corz-bad','corz-good')">
+          <span class="icon">&#9660;</span> Bad News <span class="count">5</span>
+        </div>
+      </div>
+
+      <div id="corz-good" class="news-panel active">
+
+        <a href="https://www.fool.com/earnings/call-transcripts/2026/03/02/core-scientific-corz-q4-2025-earnings-transcript/" target="_blank" class="news-item good">
+          <div class="news-meta">
+            <span class="news-date">Mar 2, 2026</span>
+            <span class="impact-tag positive">Execution</span>
+          </div>
+          <div class="news-title">350 MW Energized — On Track for 590 MW by Early 2027</div>
+          <div class="news-impact">Past the halfway point on the CoreWeave contract. Denton TX campus delivering 67 billable MW across 3 buildings. Five AI factory sites representing $5B+ in total project investment and 5M+ labor hours.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> Motley Fool — Earnings Transcript</span>
+        </a>
+
+        <a href="https://www.businesswire.com/news/home/20260302157124/en/Core-Scientific-Announces-Fourth-Quarter-Fiscal-Year-2025-Results" target="_blank" class="news-item good">
+          <div class="news-meta">
+            <span class="news-date">Mar 2, 2026</span>
+            <span class="impact-tag positive">Pivot Progress</span>
+          </div>
+          <div class="news-title">Colocation Revenue Up 268% YoY</div>
+          <div class="news-impact">Colocation revenue reached $31.3M in Q4, up from $8.5M a year earlier. Company expects a billing inflection point in coming months as additional megawatts come online and revenue ramps.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> BusinessWire — Earnings Release</span>
+        </a>
+
+        <a href="https://www.fool.com/earnings/call-transcripts/2026/03/02/core-scientific-corz-q4-2025-earnings-transcript/" target="_blank" class="news-item good">
+          <div class="news-meta">
+            <span class="news-date">Mar 2, 2026</span>
+            <span class="impact-tag positive">Diversification</span>
+          </div>
+          <div class="news-title">500 MW Under Exclusivity With Investment-Grade Customer</div>
+          <div class="news-impact">Management disclosed active negotiations for 500 MW of new colocation capacity with a large investment-grade counterparty. Would meaningfully reduce dependency on CoreWeave. Pricing trending higher.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> Motley Fool — Earnings Transcript</span>
+        </a>
+
+        <a href="https://investors.corescientific.com/news-events/press-releases/detail/127/core-scientific-announces-fourth-quarter-fiscal-year-2025-results" target="_blank" class="news-item good">
+          <div class="news-meta">
+            <span class="news-date">Mar 2, 2026</span>
+            <span class="impact-tag positive">Liquidity</span>
+          </div>
+          <div class="news-title">$533M Liquidity + 1.5 GW Pipeline</div>
+          <div class="news-impact">Year-end liquidity of $533.4M ($311M cash + $222M bitcoin). Up to $4B in potential project-based financing tied to CoreWeave contract. New sites in Hunt County TX (~430 MW), Dalton GA, and Pecos TX (~300 MW).</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> Core Scientific IR</span>
+        </a>
+
+        <a href="https://simplywall.st/stocks/us/software/nasdaq-corz/core-scientific/news/what-core-scientific-corzs-q4-profit-amid-fullyear-loss-mean" target="_blank" class="news-item good">
+          <div class="news-meta">
+            <span class="news-date">Mar 2, 2026</span>
+            <span class="impact-tag positive">Profitability</span>
+          </div>
+          <div class="news-title">Q4 Net Income of $216M (Quarterly Swing)</div>
+          <div class="news-impact">Despite a full-year net loss of $288.6M, Q4 showed $216M in net income driven by reduced impairments and progress on the colocation transition. An early signal that the AI pivot can produce positive quarters.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> Simply Wall St</span>
+        </a>
+
+      </div>
+
+      <div id="corz-bad" class="news-panel">
+
+        <a href="https://www.coindesk.com/markets/2026/03/03/core-scientific-sells-usd175-million-in-bitcoin-as-ai-pivot-accelerates" target="_blank" class="news-item bad">
+          <div class="news-meta">
+            <span class="news-date">Mar 2, 2026</span>
+            <span class="impact-tag negative">Revenue Decline</span>
+          </div>
+          <div class="news-title">Q4 Revenue Miss — $79.8M vs. $122M Expected</div>
+          <div class="news-impact">Full-year 2025 revenue just $319M with a net loss of $288.6M. Mining revenue in steep decline as BTC operations wind down. EPS of -$0.42 versus expected -$0.08. Mining segment described as "in runoff."</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> CoinDesk</span>
+        </a>
+
+        <a href="https://www.stocktitan.net/sec-filings/CORZ/8-k-core-scientific-inc-tx-reports-material-event-4c33d1a7d591.html" target="_blank" class="news-item bad">
+          <div class="news-meta">
+            <span class="news-date">Mar 2, 2026</span>
+            <span class="impact-tag negative">Governance</span>
+          </div>
+          <div class="news-title">Material Financial Restatement — Multiple Periods</div>
+          <div class="news-impact">Restating 2024 annual and multiple 2025 interim financial statements due to improperly capitalized PP&E during mining-to-colocation conversions. Material weakness in internal controls. Prior auditor opinion revised to adverse.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> StockTitan — SEC Filing</span>
+        </a>
+
+        <a href="https://www.tipranks.com/news/company-announcements/core-scientific-announces-governance-refresh-and-board-changes" target="_blank" class="news-item bad">
+          <div class="news-meta">
+            <span class="news-date">Feb 18, 2026</span>
+            <span class="impact-tag caution">Leadership Change</span>
+          </div>
+          <div class="news-title">Chairman Departing, Board in Flux</div>
+          <div class="news-impact">Chairman Jordan Levy will not stand for re-election. Cooperation agreement with activist investor Two Seas Capital forces appointment of 3 new independent directors by 2027. One additional director to depart in 2027.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> TipRanks</span>
+        </a>
+
+        <a href="https://www.coindesk.com/markets/2026/03/03/core-scientific-sells-usd175-million-in-bitcoin-as-ai-pivot-accelerates" target="_blank" class="news-item bad">
+          <div class="news-meta">
+            <span class="news-date">Mar 3, 2026</span>
+            <span class="impact-tag negative">Shrinking Reserves</span>
+          </div>
+          <div class="news-title">Bitcoin Holdings Nearly Liquidated</div>
+          <div class="news-impact">Sold ~1,900 BTC in January for $175M at ~$92K average. Now holds under 1,000 BTC. With Bitcoin at ~$67K today, remaining crypto cushion is roughly $67M — down dramatically from prior quarters.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> CoinDesk</span>
+        </a>
+
+        <a href="https://www.fool.com/earnings/call-transcripts/2026/03/02/core-scientific-corz-q4-2025-earnings-transcript/" target="_blank" class="news-item bad">
+          <div class="news-meta">
+            <span class="news-date">Ongoing</span>
+            <span class="impact-tag negative">Concentration Risk</span>
+          </div>
+          <div class="news-title">CoreWeave Funds 81% of Capex — Dependency Unchanged</div>
+          <div class="news-impact">$226.2M of $279.2M Q4 capex funded by CoreWeave. If CoreWeave's cash burn becomes untenable, Core Scientific's entire colocation buildout could stall. 2026 priority: execute CoreWeave contract and diversify.</div>
+          <span class="source-link"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg> Motley Fool — Earnings Transcript</span>
+        </a>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SUMMARY STRIP -->
+  <div class="summary-strip">
+    <div class="summary-item">
+      <div class="label">CRWV Stock (Mar 2)</div>
+      <div class="value red">$78.05</div>
+    </div>
+    <div class="summary-item">
+      <div class="label">CRWV Total Debt</div>
+      <div class="value red">~$14B+</div>
+    </div>
+    <div class="summary-item">
+      <div class="label">CORZ Stock (Mar 2)</div>
+      <div class="value orange">$16.49</div>
+    </div>
+    <div class="summary-item">
+      <div class="label">CORZ Liquidity</div>
+      <div class="value yellow">$533M</div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    CONFIDENTIAL — Cummings Electrical Internal Use Only &bull; Sources through March 3, 2026 &bull; Not investment advice
+  </div>
+</div>
+
+<script>
+function switchPanel(clicked, showId, hideId) {
+  const card = clicked.closest('.company-card');
+  const btns = card.querySelectorAll('.toggle-btn');
+  btns.forEach(b => b.classList.remove('active'));
+  clicked.classList.add('active');
+  document.getElementById(hideId).classList.remove('active');
+  document.getElementById(showId).classList.add('active');
+}
+</script>
+</body>
+</html>
